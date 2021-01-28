@@ -263,10 +263,13 @@ while True:
             else:
                 print("The initial price should be lower than the final price")
         while True: 
-            n_corrections = int(input("Number of corrections: "))
-            amplitude_list = input("Amplitude of corrections in %, separated by a comma: ")
+            n_corrections = int(input("Number of corrections (0 if no correction): "))
+            amplitude_list = input("Amplitude of corrections in %, separated by a comma - Press ENTER if you selected 0 corrections: ")
             #Convert to list of floats
-            amplitude_list = [float(i) for i in amplitude_list.split(",")]
+            if amplitude_list == "":
+                amplitude_list = []
+            else:
+                amplitude_list = [float(i) for i in amplitude_list.split(",")]
             if n_corrections == len(amplitude_list): 
                 break
             else: 
@@ -281,9 +284,12 @@ while True:
             else:
                 print("The final price should be lower than the initial price")
         while True: 
-            n_bounces = int(input("Number of bounces: "))
-            amplitude_list = input("Amplitude of bounces in %, separated by a comma: ")
-            amplitude_list = [float(i) for i in amplitude_list.split(",")]
+            n_bounces = int(input("Number of bounces (0 if no bounces): "))
+            amplitude_list = input("Amplitude of bounces in %, separated by a comma - Press ENTER if you selected 0 bounces: ")
+            if amplitude_list == "":
+                amplitude_list = []
+            else: 
+                amplitude_list = [float(i) for i in amplitude_list.split(",")]
             if n_bounces == len(amplitude_list): 
                 break
             else: 
