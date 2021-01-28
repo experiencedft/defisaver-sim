@@ -306,10 +306,10 @@ while True:
 
     print("Plotting selected price action...\n")
 
+    print("Close the plot window to continue.")
+
     plt.plot(priceArray)
     plt.show()
-
-    print("Close the plot window to continue.")
 
     print("Simulating vault behavior...\n")
 
