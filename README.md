@@ -16,4 +16,12 @@ The boost and repay functions are agnostic and can be used with any vault (Pytho
 
 ## How to use?
 
-Clone the repo, navigate to the folder in the command line, run ``python simulation.py``, and follow the instructions.
+1. Clone the repo.
+
+2. Install Python 3 with your distribution of choice.
+
+3. If they are not part of your distribution, install numpy and matplotlib from the command line by running ``pip install numpy`` and ``pip install matplotlib``.
+
+4. Navigate to the folder in the command line and run ``python simulation.py``.
+
+5. Follow the instructions displayed to run your simulation.
