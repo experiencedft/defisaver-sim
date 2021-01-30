@@ -27,29 +27,19 @@ def boost(vault, eth_price, gas_price, service_fee):
     t = vault["boost to"]/100 #Must be in decimal format in the code
     d = vault["debt"]
 
-
     if d == 0:
         ratio = float("inf")
     else:
         ratio = collateral_value/vault["debt"]
 
-    #print("Current ratio: ", ratio)
-
     if ratio >= vault["boost from"]/100:
         #Algebra to get required debt change to reach a target ratio
         debt_change = (p*c - (1-s)*g - t*d)/(t - (1-s))
-        #print("Required debt change: ", debt_change)
         #If gas fee lower than 5% boost amount, convert newly generated debt, subtract gas fee and service fee, and add to collateral
-        #print("Amount to swap for boosting: ", (1-service_fee)*(debt_change - g))
-        #print("Gas cost: ", g)
         if g < 0.05*debt_change*(1-s)/(2-s) or ratio < 1.65: 
             vault["collateral"] += (1- s)*(debt_change-g)/p
             #Add newly generated debt
             vault["debt"] += debt_change
-            # print("Boosted! New ratio = ", p*vault["collateral"]/vault["debt"], "\n")
-            # print("Vault: ", vault, "\n")
-        #else: 
-            #print("No boost :(\n") 
 
     return vault 
 
@@ -88,17 +78,11 @@ def repay(vault, eth_price, gas_price, service_fee):
         #Algebra to get required collateral change to reach a target ratio
         collateral_change = (p*c + t*s*g - t*d - t*g)/(p - t*p + t*s*p)
         #If gas fee lower than 5% repay amount, convert extracted collateral and swap to repay debt
-        # print("Amount to swap for boosting: ", (1 - s)*(p*collateral_change - g))
-        # print("Gas cost: ", g)
         if g < 0.05*p*collateral_change*(1-s)/(1.05 - 0.05*s) or ratio < 1.65:
             #Remove collateral
             vault["collateral"] -= collateral_change
             #Convert collateral to DAI and substract from debt
             vault["debt"] -= (1 - s)*(p*collateral_change - g)
-            #print("Repayed! New ratio: ", p*vault["collateral"]/(vault["debt"]), "\n")
-        #else: 
-            # print("Current ratio: ", ratio)
-            # print("No repay :(\n")
 
     return vault
 
