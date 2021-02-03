@@ -1,2 +1,6 @@
+#VSCode environment 
 .venv
 .vscode
+
+#Byte-compiled files
+__pycache__/
