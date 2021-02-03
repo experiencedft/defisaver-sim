@@ -4,3 +4,6 @@
 
 #Byte-compiled files
 __pycache__/
+
+#Local testing
+test.py
