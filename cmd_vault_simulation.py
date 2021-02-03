@@ -1,9 +1,15 @@
+'''
+
+A command line script to let the user simulate an automated DeFi Saver vault with using some simplified price action profiles based only on linear interpolation between local maxima. 
+
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 from modules import cdp 
 from modules import pricegeneration as pr
 
-#Let the user simulate as many vaults as they wish
+#Loop until the user decides to stop simulating vaults.
 while True: 
 
     init_collateral = float(input("Enter the initial amount of ETH to put in the vault: "))
