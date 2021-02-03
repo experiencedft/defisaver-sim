@@ -94,8 +94,8 @@ while True:
     print("Simulating vault behavior...\n")
 
     for price in priceArray:
-        vault = cdp.boost(vault, price, gas_price, service_fee)
-        vault = cdp.repay(vault, price, gas_price, service_fee)
+        vault = cdp.boost(vault, price, gas_price, service_fee)[0]
+        vault = cdp.repay(vault, price, gas_price, service_fee)[0]
 
 
     balance, profit = cdp.close(vault, priceArray[len(priceArray) - 1])

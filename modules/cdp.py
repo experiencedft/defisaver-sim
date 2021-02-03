@@ -41,6 +41,7 @@ def boost(vault, eth_price, gas_price, service_fee):
     g = gas_fee_in_usd
     t = vault["boost to"]/100 #Must be in decimal format in the code
     d = vault["debt"]
+    boosted = False
 
     if d == 0:
         ratio = float("inf")
@@ -55,8 +56,9 @@ def boost(vault, eth_price, gas_price, service_fee):
             vault["collateral"] += (1- s)*(debt_change-g)/p
             #Add newly generated debt
             vault["debt"] += debt_change
+            boosted = True
 
-    return vault 
+    return vault, boosted
 
 def repay(vault, eth_price, gas_price, service_fee):
     '''
@@ -82,7 +84,7 @@ def repay(vault, eth_price, gas_price, service_fee):
     g = gas_fee_in_usd
     t = vault["repay to"]/100 #Must be in decimal format in the code
     d = vault["debt"]
-
+    repaid = False
 
     if d == 0:
         ratio = float("inf")
@@ -98,8 +100,9 @@ def repay(vault, eth_price, gas_price, service_fee):
             vault["collateral"] -= collateral_change
             #Convert collateral to DAI and substract from debt
             vault["debt"] -= (1 - s)*(p*collateral_change - g)
+            repaid = True
 
-    return vault
+    return vault, repaid
 
 def close(vault, eth_price):
     '''
