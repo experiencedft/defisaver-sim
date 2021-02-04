@@ -114,10 +114,10 @@ def close(vault, eth_price):
 
         Returns: 
             balance (float): The current vault's balance (what would be left after closing it)
-            profit_in_collateral (float): The net profit of the vault, denominated in collateral. IF SOME DEBT WAS INITIALLY EXTRACTED, IT IS COUNTED AS LOST. 
+            profit_in_collateral (float): The net profit of the vault, denominated in collateral. 
     '''
     collateral_to_repay_debt = vault["debt"]/eth_price
     balance = vault["collateral"] - collateral_to_repay_debt
-    profit_in_collateral = balance - vault["initial collateral"]
+    profit_in_collateral = balance - vault["initial balance"]
 
     return balance, profit_in_collateral
