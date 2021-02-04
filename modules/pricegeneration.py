@@ -33,7 +33,8 @@ def createUptrend(init_price, final_price, n_corrections,  amplitude_list):
     init_array = np.linspace(init_price, final_price, 1000)
     if n_corrections != 0:
         #Get an array of n_corrections evenly spaced intermediate values from this initial line
-        indices = np.round(np.linspace(1, len(init_array) - 2, n_corrections)).astype(int)
+        indices = np.round(np.linspace(1, len(init_array) - 2, n_corrections+2)).astype(int)
+        indices = indices[1:]
         correction_thresholds = init_array[indices]
         #These values are used as the thresholds at which a user specified correction is triggered. 
         local_extrema = []
@@ -81,7 +82,8 @@ def createDowntrend(init_price, final_price, n_bounces, amplitude_list):
     init_array = np.linspace(init_price, final_price, 1000)
     if n_bounces != 0: 
         #Get an array of n_bounces evenly spaced intermediate values from this initial line
-        indices = np.round(np.linspace(1, len(init_array) - 2, n_bounces)).astype(int)
+        indices = np.round(np.linspace(1, len(init_array) - 2, n_bounces+2)).astype(int)
+        indices = indices[1:]
         bounce_thresholds = init_array[indices]
         #These values are used as the thresholds at which a user specified bounce is triggered. 
         local_extrema = []
