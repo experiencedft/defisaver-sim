@@ -12,8 +12,8 @@ from modules import pricegeneration as pr
 #Loop until the user decides to stop simulating vaults.
 while True: 
 
-    init_collateral = float(input("Enter the initial amount of ETH to put in the vault: "))
-    init_debt = float(input("Enter the initial debt withdrawn (0 if leveraged vault): "))
+    init_collateral = float(input("Enter the initial amount of ETH in the vault: "))
+    init_debt = float(input("Enter the initial debt (0 if leveraged vault): "))
 
     print("\n Automation settings in % collateralization\n")
 
@@ -82,7 +82,7 @@ while True:
         priceArray = pr.createSideways(average_price, amplitude, n_cycles)
 
 
-    vault = {"collateral": init_collateral, "debt": init_debt, "repay from": repay_from, "repay to": repay_to, "boost from": boost_from, "boost to": boost_to, "initial collateral": init_collateral, "initial debt": init_debt}
+    vault = {"collateral": init_collateral, "debt": init_debt, "repay from": repay_from, "repay to": repay_to, "boost from": boost_from, "boost to": boost_to, "initial collateral": init_collateral, "initial debt": init_debt, "initial balance": init_collateral - init_debt/init_price}
 
     print("Plotting selected price action...\n")
 
@@ -101,7 +101,8 @@ while True:
     balance, profit = cdp.close(vault, priceArray[len(priceArray) - 1])
 
     print("Vault ETH balance: ", balance)
-    print("Vault profit:  ", profit)
+    print("Vault USD balance: ", balance*priceArray[len(priceArray) - 1])
+    print("Vault profit in ETH:  ", profit)
     
     cont = input("Do you wish to run another simulation? Y/N  ")
 
