@@ -127,17 +127,11 @@ def boundedRandomWalk(length, lower_bound,  upper_bound, start, end, std):
     From the post:
 
     You can see it as a solution of geometric problem. 
-    
     The trend_line is connecting your start and end points, and have margins defined by lower_bound and upper_bound. 
-    
     rand is your random walk, rand_trend it's trend line and rand_deltas is it's deviation from the rand trend line. 
-    
     We collocate the trend lines, and want to make sure that deltas don't exceed margins. When rand_deltas exceeds the allowed margin, we "fold" the excess back to the bounds.
-
     At the end you add the resulting random deltas to the start=>end trend line, thus receiving the desired bounded random walk.
-
     The std parameter corresponds to the amount of variance of the random walk.
-
     In this version "std" is not promised to be the "interval". 
 
 
