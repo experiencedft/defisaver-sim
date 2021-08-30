@@ -106,7 +106,7 @@ class CDP():
         '''
 
         #Check that it's possible to boost with the desired target
-        if target/100 < self.collateral*price/self.debt:
+        if self.debt == 0 or target/100 < self.collateral*price/self.debt:
             # Fixed estimate of 1M gas consumed by the boost operation to calculate the gas fee in 
             # ETH
             g = 1000000*gas_price_in_gwei*1e-9
@@ -120,10 +120,6 @@ class CDP():
             deltaDebt = (p*c - p*g - t*d)/(t - gamma)
             # Calculate corresponding collateral increase (> 0)
             deltaCollateral = (gamma*deltaDebt - p*g)/p
-            print("collateral = ", self.collateral)
-            print("debt = ", self.debt)
-            print("delta collateral = ", deltaCollateral)
-            print("delta debt = ", deltaDebt)
             # Update position
             self.debt += deltaDebt
             self.collateral += deltaCollateral
@@ -152,7 +148,9 @@ class CDP():
         '''
 
         # Check that it's possible to repay with the desired target
-        if target/100 > self.collateral*price/self.debt:
+        if self.debt == 0:
+            assert False
+        elif target/100 > self.collateral*price/self.debt:
             # Fixed estimate of 1M gas consumed by the repay operation to calculate the gas fee in 
             # ETH
             g = 1000000*gas_price_in_gwei*1e-9
@@ -164,12 +162,11 @@ class CDP():
             gamma = 1 - service_fee/100
             # Calculate collateral decrease (> 0) required to arrive to the target collateralization ratio
             deltaCollateral = (t*d + t*p*g - p*c)/(p*(gamma*t-1))
-            print("delta collateral = ", deltaCollateral)
             deltaDebt = gamma*p*deltaCollateral - p*g
             # Update position
             self.collateral -= deltaCollateral
             self.debt -= deltaDebt
             # Return True if repay took place
             return True
-        else: 
+        else:
             return False
