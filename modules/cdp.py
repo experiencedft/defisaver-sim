@@ -123,6 +123,8 @@ class CDP():
             # Update position
             self.debt += deltaDebt
             self.collateral += deltaCollateral
+            assert self.debt > 0
+            assert self.collateral > 0
             # Return True if boost took place
             return True
         else: 
@@ -166,6 +168,8 @@ class CDP():
             # Update position
             self.collateral -= deltaCollateral
             self.debt -= deltaDebt
+            assert self.collateral > 0
+            assert self.debt > 0
             # Return True if repay took place
             return True
         else:
