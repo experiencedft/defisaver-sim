@@ -107,6 +107,8 @@ def pdf_fit(x):
 
 print("Probability of profit: ", round(100*quad(pdf_fit, 0, xmax)[0], 2), "%")
 print("Probability of outperforming: ", round(100*quad(pdf_fit, drift, xmax)[0],2), "%")
+print("Probability of outperforming by a factor of 10: ", round(100*quad(pdf_fit, drift+np.log(10), xmax)[0]), "%")
+print("Probability of outperforming by a factor of 50: ", round(100*quad(pdf_fit, drift+np.log(50), xmax)[0]), "%")
 
 
 
