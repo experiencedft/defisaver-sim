@@ -159,3 +159,28 @@ def boundedRandomWalk(length, lower_bound,  upper_bound, start, end, std):
     rand_deltas[lower_slips_mask] = (lower_bound_delta + lower_deltas)[lower_slips_mask]
 
     return trend_line + rand_deltas
+
+def generateGBM(T, mu, sigma, S0, dt):
+    '''
+    Generate a geometric brownian motion time series. Shamelessly copy pasted from here: https://stackoverflow.com/a/13203189
+
+    Params: 
+
+    T: time horizon 
+    mu: drift
+    sigma: percentage volatility
+    S0: initial price
+    dt: size of time steps
+
+    Returns: 
+
+    t: time array
+    S: time series
+    '''
+    N = round(T/dt)
+    t = np.linspace(0, T, N)
+    W = np.random.standard_normal(size = N) 
+    W = np.cumsum(W)*np.sqrt(dt) ### standard brownian motion ###
+    X = (mu-0.5*sigma**2)*t + sigma*W 
+    S = S0*np.exp(X) ### geometric brownian motion ###
+    return t, S

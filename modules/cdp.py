@@ -1,123 +1,175 @@
 '''
 
-The CDP module contains all the tools required to act on a Maker collateralized debt position or vault, such as increasing or decreasing its leverage (boost and repay), closing the vault to calculate its lifetime profit, adding collateral or drawing more debt. 
+The CDP module contains all the tools required to simulate a collateralized debt position, such as increasing or decreasing 
+its leverage (boost and repay), closing the vault to calculate its lifetime profit, adding collateral or drawing more debt. 
 
-The vault should be presented to the interface as a Python dictionary with the appropriate keys depending on the function called. The keys should be:
+The position is represented as an object whose methods provide all the above interactions. It can be leveraged or non leveraged.
 
-"collateral": The collateral in the vault.
-"debt": The debt associated with the vault.
-"repay from": The collateralization threshold in % at which the vault should automatically be deleveraged.
-"repay to": The collateralization target in % after deleveraging.
-"boost from": The collateralization threshold in % at which the leverage of the vault should automatically be increased. 
-"boost to": The collateralization target in % after increasing leverage.
-"initial collateral": The initial collateral in at the inception of the vault.
-"initial debt": The initial debt at the inception of the vault. 
+For the purpose of this simulation, a vault is considered leveraged if part or all of the debt is used to buy more collateral.
 
 '''
 
 import numpy as np
 
-def boost(vault, eth_price, gas_price, service_fee):
+class CDP():
     '''
-    Given a vault (dictionary), checks if the vault can be boosted, and if yes, boosts it and returns the new vault.
+    Attributes
+    ___________
 
-        Parameters: 
-            vault (dictionary): A dictionary representing an automated vault
-            eth_price (float): A float representing the current price of ETH - or another collateral
-            gas_price (float): A float representing the current *fast* gas price in gwei
-            service_fee (float): A float representing the DeFi Saver service fee in %
-
-        Returns: 
-            vault (dictionary): The new updated vault
-    '''  
-    collateral_value = vault["collateral"]*eth_price
-    gas_fee_in_eth = 800000*gas_price*1e-9
-    gas_fee_in_usd = eth_price*gas_fee_in_eth
-    #Conversion of service fee in decimal format
-    s = service_fee/100
-    #New variables for more readable math
-    p = eth_price
-    c = vault["collateral"]
-    g = gas_fee_in_usd
-    t = vault["boost to"]/100 #Must be in decimal format in the code
-    d = vault["debt"]
-    boosted = False
-
-    if d == 0:
-        ratio = float("inf")
-    else:
-        ratio = collateral_value/vault["debt"]
-
-    if ratio >= vault["boost from"]/100:
-        #Algebra to get required debt change to reach a target ratio
-        debt_change = (p*c - (1-s)*g - t*d)/(t - (1-s))
-        #If gas fee lower than 5% boost amount, convert newly generated debt, subtract gas fee and service fee, and add to collateral
-        if g < 0.05*debt_change*(1-s)/(2-s) or ratio < 1.65: 
-            vault["collateral"] += (1- s)*(debt_change-g)/p
-            #Add newly generated debt
-            vault["debt"] += debt_change
-            boosted = True
-
-    return vault, boosted
-
-def repay(vault, eth_price, gas_price, service_fee):
+    collateral: float
+        the amount of collateral in the position, in unit of the collateral asset
+    debt: float
+        the amountof debt of the position, in unit of the debt asset
+    automated: bool
+        a boolean flag indicating whether the CDP is automated
+    automation_settings: dictionnary
+        a dictionnary containing the automation settings
+        {"repay from": ..., "repay to": ..., "boost from": ..., "boost to": ...}
     '''
-    Given a vault (dictionary), checks if the vault can be repayed, and if yes, repays it and returns the new vault.
 
-        Parameters: 
-            vault (dictionary): A dictionary representing an automated vault
-            eth_price (float): A float representing the current price of ETH 
-            gas_price (float): A float representing the current *fast* gas price in gwei
-            service_fee (float): A float representing the DeFi Saver service fee in %
+    def __init__(self, initial_collateral: float, initial_debt: float) -> None:
+        self.collateral = initial_collateral
+        self.debt = initial_debt
+        self.automated = False
+        self.automation_settings = {"repay from": 0, "repay to": 0, "boost from": 0, "boost to": 0}
 
-        Returns: 
-            vault (dictionary): The new updated vault
-    '''  
-    collateral_value = vault["collateral"]*eth_price
-    gas_fee_in_eth = 800000*gas_price*1e-9
-    gas_fee_in_usd = eth_price*gas_fee_in_eth
-    #Conversion of service fee in decimal format
-    s = service_fee/100
-    #New variables for more readable math
-    p = eth_price
-    c = vault["collateral"]
-    g = gas_fee_in_usd
-    t = vault["repay to"]/100 #Must be in decimal format in the code
-    d = vault["debt"]
-    repaid = False
+    def getCollateralizationRatio(self, price: float):
+        '''
+        Returns the collateralization ratio in %
+        '''
+        return 100*self.collateral*price/self.debt
 
-    if d == 0:
-        ratio = float("inf")
-    else: 
-        ratio = collateral_value/vault["debt"]
+    def changeCollateral(self, deltaCollateral: float):
+        '''
+        Add deltaCollateral to the position's collateral. Note: deltaCollateral may be negative.
+        '''
+        self.collateral += deltaCollateral
     
-    if ratio <= vault["repay from"]/100:
-        #Algebra to get required collateral change to reach a target ratio
-        collateral_change = (p*c + t*s*g - t*d - t*g)/(p - t*p + t*s*p)
-        #If gas fee lower than 5% repay amount, convert extracted collateral and swap to repay debt
-        if g < 0.05*p*collateral_change*(1-s)/(1.05 - 0.05*s) or ratio < 1.65:
-            #Remove collateral
-            vault["collateral"] -= collateral_change
-            #Convert collateral to DAI and substract from debt
-            vault["debt"] -= (1 - s)*(p*collateral_change - g)
-            repaid = True
+    def changeDebt(self, deltaDebt: float):
+        '''
+        Add deltaDebt to the position's debt. Note: deltaDebt may be negative.
+        '''
+        self.debt += deltaDebt
 
-    return vault, repaid
+    def close(self, price: float) -> float:
+        '''
+        Close the vault by paying back all of the debt and return the amount of collateral left.
+        Assumes infinite liquidity at the current price.
 
-def close(vault, eth_price):
-    '''
-    Given a vault (dictionary), returns the collateral that would be left by closing it using the collateral within the vault to repay the debt.
+        Param:
 
-        Parameters: 
-            vault (dictionary): A dictionary representing an automated vault
-            eth_price (float): A float representing the current price of ETH
+        price: float
+            The current price of the collateral denominated in the debt asset.
+        '''
 
-        Returns: 
-            balance (float): The current vault's balance (what would be left after closing it)
-            profit_in_collateral (float): The net profit of the vault, denominated in collateral. 
-    '''
-    collateral_to_repay_debt = vault["debt"]/eth_price
-    balance = vault["collateral"] - collateral_to_repay_debt
-    profit_in_collateral = balance - vault["initial balance"]
+        # The amount of collateral to sell to pay back the debt
+        collateralToSell = self.debt/price
+        self.collateral -= collateralToSell
+        self.debt = 0
+        return self.collateral
 
-    return balance, profit_in_collateral
+    def automate(self, repay_from: float, repay_to: float, boost_from: float, boost_to: float):
+        '''
+        Enable or update automation for a CDP with the given automation settings.
+
+        Param:
+
+        automation_settings: 
+            each param is an automation setting in the order of repay from, repay to, 
+            boost from, boost to
+        '''
+
+        self.automated = True
+        self.automation_settings["repay from"] = repay_from
+        self.automation_settings["repay to"] = repay_to
+        self.automation_settings["boost from"] = boost_from
+        self.automation_settings["boost to"] = boost_to
+    
+    def disableAutomation(self):
+        self.automated = False
+
+    def boost(self, price: float, target: float, gas_price_in_gwei: float, service_fee: float):
+        '''
+        Given the current price of the collateral asset denominated in the debt asset, check whether 
+        the collateralization ratio is above threshold, and if yes, boost to the target ratio.
+        A boost is defined as generating more debt from the position and buying collateral with it.
+
+        Params:
+            target: 
+                target collateralization ratio in %
+            price: 
+                current price of the collateral denominated in the debt asset
+            gas_price_in_gwei:
+                current on-chain gas price in gwei (nanoETH)
+            serice_fee: 
+                current fee charged by DeFi Saver (in %/100)
+        '''
+
+        #Check that it's possible to boost with the desired target
+        if target/100 < self.collateral*price/self.debt:
+            # Fixed estimate of 1M gas consumed by the boost operation to calculate the gas fee in 
+            # ETH
+            g = 1000000*gas_price_in_gwei*1e-9
+            # Target collateralization ratio
+            t = target/100
+            c = self.collateral
+            d = self.debt
+            p = price
+            gamma = 1 - service_fee
+            # Calculate debt increase (> 0)required to arrive to the target collateralization ratio
+            deltaDebt = (p*c - p*g - t*d)/(t - gamma)
+            # Calculate corresponding collateral increase (> 0)
+            deltaCollateral = (gamma*deltaDebt - p*g)/p
+            print("collateral = ", self.collateral)
+            print("debt = ", self.debt)
+            print("delta collateral = ", deltaCollateral)
+            print("delta debt = ", deltaDebt)
+            # Update position
+            self.debt += deltaDebt
+            self.collateral += deltaCollateral
+            # Return True if boost took place
+            return True
+        else: 
+            # If boost not possible with desired parameters
+            return False
+
+    def repay(self, target: float, price: float, gas_price_in_gwei: float, service_fee: float): 
+        '''
+        Given the current price of the collateral asset denominated in the debt asset, check whether
+        the collateralization ratio is below threshold, and if yes, repay to the target ratio. 
+        A repay is defined as selling some of the collateral from the position to acquire more of the 
+        debt asset and repay part of the debt with it.
+
+        Params:
+            target: 
+                target collateralization ratio in %
+            price: 
+                current price of the collateral denominated in the debt asset
+            gas_price_in_gwei:
+                current on-chain gas price in gwei (nanoETH)
+            serice_fee: 
+                current fee charged by DeFi Saver (in %/100)
+        '''
+
+        # Check that it's possible to repay with the desired target
+        if target/100 > self.collateral*price/self.debt:
+            # Fixed estimate of 1M gas consumed by the repay operation to calculate the gas fee in 
+            # ETH
+            g = 1000000*gas_price_in_gwei*1e-9
+            # Target collateralization ratio
+            t = target/100
+            c = self.collateral
+            d = self.debt
+            p = price
+            gamma = 1 - service_fee
+            # Calculate collateral decrease (> 0) required to arrive to the target collateralization ratio
+            deltaCollateral = (t*d + t*p*g - p*c)/(p*(gamma*t-1))
+            print("delta collateral = ", deltaCollateral)
+            deltaDebt = gamma*p*deltaCollateral - p*g
+            # Update position
+            self.collateral -= deltaCollateral
+            self.debt -= deltaDebt
+            # Return True if repay took place
+            return True
+        else: 
+            return False
