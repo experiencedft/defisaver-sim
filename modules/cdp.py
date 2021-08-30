@@ -88,7 +88,7 @@ class CDP():
     def disableAutomation(self):
         self.automated = False
 
-    def boost(self, price: float, target: float, gas_price_in_gwei: float, service_fee: float):
+    def boostTo(self, target: float, price: float, gas_price_in_gwei: float, service_fee: float):
         '''
         Given the current price of the collateral asset denominated in the debt asset, check whether 
         the collateralization ratio is above threshold, and if yes, boost to the target ratio.
@@ -96,13 +96,13 @@ class CDP():
 
         Params:
             target: 
-                target collateralization ratio in %
+                target collateralization ratio (in %)
             price: 
                 current price of the collateral denominated in the debt asset
             gas_price_in_gwei:
                 current on-chain gas price in gwei (nanoETH)
             serice_fee: 
-                current fee charged by DeFi Saver (in %/100)
+                current fee charged by DeFi Saver (in %)
         '''
 
         #Check that it's possible to boost with the desired target
@@ -115,7 +115,7 @@ class CDP():
             c = self.collateral
             d = self.debt
             p = price
-            gamma = 1 - service_fee
+            gamma = 1 - service_fee/100
             # Calculate debt increase (> 0)required to arrive to the target collateralization ratio
             deltaDebt = (p*c - p*g - t*d)/(t - gamma)
             # Calculate corresponding collateral increase (> 0)
@@ -133,7 +133,7 @@ class CDP():
             # If boost not possible with desired parameters
             return False
 
-    def repay(self, target: float, price: float, gas_price_in_gwei: float, service_fee: float): 
+    def repayTo(self, target: float, price: float, gas_price_in_gwei: float, service_fee: float): 
         '''
         Given the current price of the collateral asset denominated in the debt asset, check whether
         the collateralization ratio is below threshold, and if yes, repay to the target ratio. 
@@ -148,7 +148,7 @@ class CDP():
             gas_price_in_gwei:
                 current on-chain gas price in gwei (nanoETH)
             serice_fee: 
-                current fee charged by DeFi Saver (in %/100)
+                current fee charged by DeFi Saver (in %)
         '''
 
         # Check that it's possible to repay with the desired target
@@ -161,7 +161,7 @@ class CDP():
             c = self.collateral
             d = self.debt
             p = price
-            gamma = 1 - service_fee
+            gamma = 1 - service_fee/100
             # Calculate collateral decrease (> 0) required to arrive to the target collateralization ratio
             deltaCollateral = (t*d + t*p*g - p*c)/(p*(gamma*t-1))
             print("delta collateral = ", deltaCollateral)
