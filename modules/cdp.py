@@ -120,6 +120,8 @@ class CDP():
             deltaDebt = (p*c - p*g - t*d)/(t - gamma)
             # Calculate corresponding collateral increase (> 0)
             deltaCollateral = (gamma*deltaDebt - p*g)/p
+            if self.collateral + deltaCollateral <=0  or self.debt + deltaDebt <= 0:
+                return "Ruined"
             # Update position
             self.debt += deltaDebt
             self.collateral += deltaCollateral
@@ -165,6 +167,8 @@ class CDP():
             # Calculate collateral decrease (> 0) required to arrive to the target collateralization ratio
             deltaCollateral = (t*d + t*p*g - p*c)/(p*(gamma*t-1))
             deltaDebt = gamma*p*deltaCollateral - p*g
+            if self.collateral - deltaCollateral <= 0  or self.debt - deltaDebt <= 0 :
+                return "Ruined"
             # Update position
             self.collateral -= deltaCollateral
             self.debt -= deltaDebt

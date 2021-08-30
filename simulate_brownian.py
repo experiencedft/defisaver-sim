@@ -63,9 +63,17 @@ for i in range(N_paths):
     t, path = pr.generateGBM(1, drift, volatility, init_price, time_step_size)
     for price in path:
         if vault.getCollateralizationRatio(price) > vault.automation_settings["boost from"]:
-            vault.boostTo(vault.automation_settings["boost to"], price, gas_price, service_fee)
+            _ = vault.boostTo(vault.automation_settings["boost to"], price, gas_price, service_fee)
+            if _ == "Ruined": 
+                V_col.append(vault.close(price))
+                V_debt.append(path[-1]*vault.close(price))
+                break
         elif vault.getCollateralizationRatio(price) < vault.automation_settings["repay from"]:
-            vault.repayTo(vault.automation_settings["repay to"], price, gas_price, service_fee)
+            _ = vault.repayTo(vault.automation_settings["repay to"], price, gas_price, service_fee)
+            if _ == "Ruined":
+                V_col.append(vault.close(price))
+                V_debt.append(path[-1]*vault.close(price))
+                break
         V_col.append(vault.collateral - vault.debt/price)
         V_debt.append(price*(vault.collateral - vault.debt/price))
     # In %
