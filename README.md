@@ -4,24 +4,23 @@
 
 This project is intended to provide a suite of tools to simulate the behavior of automated DeFi Saver vaults.  
 
-An example scrit is included that lets users simulate the behavior of an arbitrary vault under simplified price action profiles: uptrend, downtrend, or sideways.
+An example scrit is included that lets users simulate the behavior of an arbitrary vault under Geometric Brownian Motion assumptions.
 
-**Uptrend:** Final price higher than the initial price, with the possibility of a user-specified number of corrections with given amplitudes in % of the current price along the way. The price is allowed to go below the initial price if one of the corrections is too steep. Simple linear interpolation between local extrema.
+``modules/cdp.py`` contains the logic of CDPs as a ``CDP()`` class. Collateral and debt can be added or removed, automation is turned off by default but can be enabled by providing some automation settings. Boost and Repay functions can be called even without automation turned on. A derivation of the formulas used for these functions will be provided in a separate document. Note: currently the implementation doesn't take into account some of the conditions used by the DeFi Saver team. In particular, there is no emergency repay if close to some liquidation threshold, and there is no conditin on the max fees charged. This is left for a later update. NOTE: because of this, it might be that if a position is too small initially, the gas fee charged when boosting or repaying would make the operation impossible. In this case, the functions will throw an error.
 
-**Downtrend:** Final price lower than the initial price, with the possibility of a user-specified number of bounces with given amplitudes in % of the current price along the way. The price is allowed to go above the initial price if one of the corrections is too steep. Simple linear interpolation between local extrema.
+``modules/pricegeneration.py`` contains a collection of functions used to generate diverse price actions:
 
-**Sideways:** The user chooses an average price. The price then oscillates in a sinusoid around that average price with a given amplitude in % of the initial price for a given number of cycles. One cycle is defined as the price starting from the average, going up by X%, back to the average, and down by X%, where X is the user-specified amplitude.
+- Simple linear interpolation between some price points, assuming for example a price going from A to B where B > A with 3 corrections of 20%, 10% and 40% respectively.
+- Simplified sideways price action as a sine wave.
+- Bounded random walk with prescribed standard deviation.
+- Geometric Brownian Motion (GBM).
 
-The boost and repay functions are agnostic and can be used with any vault (Python dictionary) at any price (float).
+``simulate_brownian.py`` is an example script using the above modules to generate a distribution of returns under GBM for some given automation settings. It is associated with a ``config.ini`` file where simulations parameters need to be set. NOTE: if the position if too small initially as discussed above, the simulation script considers the position "ruined" if it's not possible to update it with the current gas price. It is then simply closed and the amount of collateral obtained after closing is used to calculate returns.
 
-## How to use?
+## Requirements
 
-1. Clone the repo.
+Python 3.
 
-2. Install Python 3 with your distribution of choice.
-
-3. If they are not part of your distribution, install numpy and matplotlib from the command line by running ``pip install numpy`` and ``pip install matplotlib``.
-
-4. Navigate to the folder in the command line and run ``python cmd_vault_simulation.py``.
-
-5. Follow the instructions displayed to run your simulation.
+``pip install numpy``
+``pip install scipy``
+``pip install matplotlib``
