@@ -184,3 +184,32 @@ def generateGBM(T, mu, sigma, S0, dt):
     X = (mu-0.5*sigma**2)*t + sigma*W 
     S = S0*np.exp(X) ### geometric brownian motion ###
     return t, S
+
+def generateBoundedGBM(T, sigma, start, end, dt):
+    '''
+    Generate a bounded geometric brownian motion making use of a brownian bridge.
+
+    Params: 
+
+    T: time horizon
+    sigma: volatility
+    start: start price
+    end: end price
+    dt: time steps size
+
+    Returns: 
+
+    t: time array
+    S: time series
+    '''
+
+    S0 = start
+    mu =  (1/T)*np.log(end/start) + (sigma**2)/2
+    N = round(T/dt)
+    t = np.linspace(0, T, N)
+    W = np.random.standard_normal(size = N)
+    W = np.cumsum(W)*np.sqrt(dt)
+    W = W - (t/T)*W[-1]
+    X = (mu-0.5*sigma**2)*t + sigma*W
+    S = S0*np.exp(X)
+    return t, S
