@@ -53,7 +53,7 @@ returns_debt = []
 max_loss_debt = []
 
 for i in range(N_paths): 
-    vault = cdp.CDP(0, 0)
+    vault = cdp.CDP(0, 0, 0)
     vault.changeCollateral(init_portfolio)
     vault.boostTo(init_collateralization, init_price, gas_price, service_fee)
     vault.automate(repay_from, repay_to, boost_from, boost_to)
@@ -96,6 +96,8 @@ log_returns_col = np.log(returns_col)
 
 m, s = stats.norm.fit(log_returns_debt)
 
+plt.figure(figsize = [9, 6.5])
+
 binwidth = abs((max(log_returns_debt) - min(log_returns_debt))/(N_paths/10))
 plt.hist(log_returns_debt, np.arange(min(log_returns_debt), max(log_returns_debt) + binwidth, binwidth), density=True)
 
@@ -106,9 +108,9 @@ def pdf_fit(x):
     return stats.norm.pdf(x, m, s)
 
 print("Probability of profit: ", round(100*quad(pdf_fit, 0, xmax)[0], 2), "%")
-print("Probability of outperforming: ", round(100*quad(pdf_fit, drift, xmax)[0],2), "%")
-print("Probability of outperforming by a factor of 10: ", round(100*quad(pdf_fit, drift+np.log(10), xmax)[0]), "%")
-print("Probability of outperforming by a factor of 50: ", round(100*quad(pdf_fit, drift+np.log(50), xmax)[0]), "%")
+print("Probability of outperforming: ", round(100*quad(pdf_fit, drift, 2*xmax)[0],2), "%")
+print("Probability of outperforming by a factor of 10: ", round(100*quad(pdf_fit, drift+np.log(10), 2*xmax)[0]), "%")
+print("Probability of outperforming by a factor of 50: ", round(100*quad(pdf_fit, drift+np.log(50), 2*xmax)[0]), "%")
 
 
 
@@ -117,7 +119,7 @@ plt.title("Distribution of log-returns for a TCL strategy \n" +
 r"$R_f = {rf}, \ R_t = {rt}$".format(rf = repay_from, rt = repay_to) + " | "
 r"$B_f = {bf}, \ B_t = {bt}$".format(bf = boost_from, bt = boost_to) + 
 "\n" + "Market conditions (GBM): " + 
-r"$\sigma_{{vol}} = {sigma},  \ \mu_{{drift}} = {mu}$".format(sigma = volatility, mu = drift))
+r"$\sigma_{{vol}} = {sigma},  \ \mu_{{drift}} = {mu}, \ dt = 4 \ \mathrm{{hour}}$".format(sigma = volatility, mu = drift))
 plt.annotate('*Threshold-based Constant Leverage', (0.5, -0.08), (0, 0), xycoords='axes fraction', textcoords='offset points', va='top')
 plt.xlim(xmin, xmax)
 # plt.xlabel("Log-returns")

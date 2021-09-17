@@ -25,13 +25,19 @@ class CDP():
     automation_settings: dictionnary
         a dictionnary containing the automation settings
         {"repay from": ..., "repay to": ..., "boost from": ..., "boost to": ...}
+    min_ratio: float
+        the minimum collateralization ratio admitted by the protocol, below which liquidation occurs
     '''
 
-    def __init__(self, initial_collateral: float, initial_debt: float) -> None:
+    def __init__(self, initial_collateral: float, initial_debt: float, min_ratio: float) -> None:
+        '''
+        min_ratio in %
+        '''
         self.collateral = initial_collateral
         self.debt = initial_debt
         self.automated = False
         self.automation_settings = {"repay from": 0, "repay to": 0, "boost from": 0, "boost to": 0}
+        self.min_ratio = min_ratio
 
     def getCollateralizationRatio(self, price: float):
         '''
@@ -78,7 +84,7 @@ class CDP():
             each param is an automation setting in the order of repay from, repay to, 
             boost from, boost to
         '''
-
+        assert repay_from > self.min_ratio + 10
         self.automated = True
         self.automation_settings["repay from"] = repay_from
         self.automation_settings["repay to"] = repay_to
@@ -116,19 +122,28 @@ class CDP():
             d = self.debt
             p = price
             gamma = 1 - service_fee/100
-            # Calculate debt increase (> 0)required to arrive to the target collateralization ratio
-            deltaDebt = (p*c - p*g - t*d)/(t - gamma)
-            # Calculate corresponding collateral increase (> 0)
-            deltaCollateral = (gamma*deltaDebt - p*g)/p
-            if self.collateral + deltaCollateral <=0  or self.debt + deltaDebt <= 0:
-                return "Ruined"
-            # Update position
-            self.debt += deltaDebt
-            self.collateral += deltaCollateral
-            assert self.debt > 0
-            assert self.collateral > 0
-            # Return True if boost took place
-            return True
+            print("gas cost in USD: ", g*p)
+            print("gas cost limit: ", (p*c - t*d)/(5*(t - gamma) + 1))
+            # Gas cost must be below 20% of the boost amount
+            if p*g < (p*c - t*d)/(5*(t - gamma) + 1):
+                #The gas charged to the user is capped at a price of 499 gwei
+                if gas_price_in_gwei > 499:
+                    g = 1000000*499*1e-9
+                # Calculate debt increase (> 0)required to arrive to the target collateralization ratio
+                deltaDebt = (p*c - p*g - t*d)/(t - gamma)
+                # print("debt change: ", deltaDebt)
+                # print("gas_cost/debt_change: ", p*g/deltaDebt)
+                # Calculate corresponding collateral increase (> 0)
+                deltaCollateral = (gamma*deltaDebt - p*g)/p
+                # Update position
+                self.debt += deltaDebt
+                self.collateral += deltaCollateral
+                assert self.debt > 0
+                assert self.collateral > 0
+                # Return True if boost took place
+                return True
+            else: 
+                return False
         else: 
             # If boost not possible with desired parameters
             return False
@@ -150,11 +165,12 @@ class CDP():
             serice_fee: 
                 current fee charged by DeFi Saver (in %)
         '''
-
+        collateralization = self.collateral*price/self.debt
         # Check that it's possible to repay with the desired target
         if self.debt == 0:
             assert False
-        elif target/100 > self.collateral*price/self.debt:
+        # The current CRatio must be below the target OR below min_ratio + 10%
+        elif collateralization < target/100:
             # Fixed estimate of 1M gas consumed by the repay operation to calculate the gas fee in 
             # ETH
             g = 1000000*gas_price_in_gwei*1e-9
@@ -164,17 +180,38 @@ class CDP():
             d = self.debt
             p = price
             gamma = 1 - service_fee/100
-            # Calculate collateral decrease (> 0) required to arrive to the target collateralization ratio
-            deltaCollateral = (t*d + t*p*g - p*c)/(p*(gamma*t-1))
-            deltaDebt = gamma*p*deltaCollateral - p*g
-            if self.collateral - deltaCollateral <= 0  or self.debt - deltaDebt <= 0 :
-                return "Ruined"
-            # Update position
-            self.collateral -= deltaCollateral
-            self.debt -= deltaDebt
-            assert self.collateral > 0
-            assert self.debt > 0
-            # Return True if repay took place
-            return True
+            # print("gas cost in USD: ", p*g)
+            # print("gas cost in ETH: ", g)
+            # print("gas cost limit: ", (t*d - p*c)/(5*(gamma*t - 1) + t))
+            # print("collateralization in %: ", 100*collateralization)
+            # print("min repay threshold: ", self.min_ratio + 10)
+
+            # Gas cost must be lower than 20% of repay amount OR we must be below the min repay ratio
+            if 100*collateralization < self.min_ratio + 10:
+                isEmergencyRepay = True
+            if p*g < (t*d - p*c)/(5*(gamma*t - 1) - t) or isEmergencyRepay:
+                if isEmergencyRepay:
+                # In case of an emergency repay, this might exceed the previous 20%. In this case, cap the charged amount to 40%.
+                    if p*g > (t*d - p*c)/(2.5*(gamma*t - 1) - t):
+                        g = (1/p)*(t*d - p*c)/(2.5*(gamma*t - 1) - t)
+                #The gas charged to the user is capped at a price of 499 gwei
+                elif gas_price_in_gwei > 499:
+                    g = 1000000*499*1e-9
+                # Calculate collateral decrease (> 0) required to arrive to the target collateralization ratio
+                deltaCollateral = (t*d + t*p*g - p*c)/(p*(gamma*t-1))
+                # print("collateral change: ", deltaCollateral)
+                # print("gas_cost/collateral_change: ", g/deltaCollateral)
+                deltaDebt = gamma*p*deltaCollateral - p*g
+                # if self.collateral - deltaCollateral <= 0  or self.debt - deltaDebt <= 0 :
+                #     return "Ruined"
+                # Update position
+                self.collateral -= deltaCollateral
+                self.debt -= deltaDebt
+                assert self.collateral > 0
+                assert self.debt > 0
+                # Return True if repay took place
+                return True
+            else: 
+                return False
         else:
             return False
