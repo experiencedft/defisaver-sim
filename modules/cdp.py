@@ -122,8 +122,8 @@ class CDP():
             d = self.debt
             p = price
             gamma = 1 - service_fee/100
-            print("gas cost in USD: ", g*p)
-            print("gas cost limit: ", (p*c - t*d)/(5*(t - gamma) + 1))
+            # print("gas cost in USD: ", g*p)
+            # print("gas cost limit: ", (p*c - t*d)/(5*(t - gamma) + 1))
             # Gas cost must be below 20% of the boost amount
             if p*g < (p*c - t*d)/(5*(t - gamma) + 1):
                 #The gas charged to the user is capped at a price of 499 gwei
@@ -189,6 +189,8 @@ class CDP():
             # Gas cost must be lower than 20% of repay amount OR we must be below the min repay ratio
             if 100*collateralization < self.min_ratio + 10:
                 isEmergencyRepay = True
+            else: 
+                isEmergencyRepay = False
             if p*g < (t*d - p*c)/(5*(gamma*t - 1) - t) or isEmergencyRepay:
                 if isEmergencyRepay:
                 # In case of an emergency repay, this might exceed the previous 20%. In this case, cap the charged amount to 40%.
