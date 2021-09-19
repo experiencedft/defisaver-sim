@@ -35,7 +35,7 @@ class CDP():
         '''
         self.collateral = initial_collateral
         self.debt = initial_debt
-        self.automated = False
+        self.isAutomated = False
         self.automation_settings = {"repay from": 0, "repay to": 0, "boost from": 0, "boost to": 0}
         self.min_ratio = min_ratio
 
@@ -92,7 +92,7 @@ class CDP():
         self.automation_settings["boost to"] = boost_to
     
     def disableAutomation(self):
-        self.automated = False
+        self.isAutomated = False
 
     def boostTo(self, target: float, price: float, gas_price_in_gwei: float, service_fee: float):
         '''
@@ -211,6 +211,7 @@ class CDP():
                 self.debt -= deltaDebt
                 assert self.collateral > 0
                 assert self.debt > 0
+                # NOTE: Add a disable automation condition if the debt falls below 10K
                 # Return True if repay took place
                 return True
             else: 
