@@ -25,6 +25,8 @@ class CDP():
     automation_settings: dictionnary
         a dictionnary containing the automation settings
         {"repay from": ..., "repay to": ..., "boost from": ..., "boost to": ...}
+    min_automation_debt: float
+        the minimum debt required for automation to be enabled, in amount of debt asset
     min_ratio: float
         the minimum collateralization ratio admitted by the protocol, below which liquidation occurs
     '''
@@ -38,6 +40,8 @@ class CDP():
         self.isAutomated = False
         self.automation_settings = {"repay from": 0, "repay to": 0, "boost from": 0, "boost to": 0}
         self.min_ratio = min_ratio
+        # NOTE: pass this as an argument later on and include change in simulate.py and related function calls
+        self.min_automation_debt = 10000
 
     def getCollateralizationRatio(self, price: float):
         '''
@@ -193,9 +197,9 @@ class CDP():
                 isEmergencyRepay = False
             if p*g < (t*d - p*c)/(5*(gamma*t - 1) - t) or isEmergencyRepay:
                 if isEmergencyRepay:
-                # In case of an emergency repay, this might exceed the previous 20%. In this case, cap the charged amount to 40%.
-                    if p*g > (t*d - p*c)/(2.5*(gamma*t - 1) - t):
-                        g = (1/p)*(t*d - p*c)/(2.5*(gamma*t - 1) - t)
+                # In case of an emergency repay, this might exceed the previous 20%. In this case, cap the charged amount to 20%.
+                    if p*g > (t*d - p*c)/(5*(gamma*t - 1) - t):
+                        g = (1/p)*(t*d - p*c)/(5*(gamma*t - 1) - t)
                 #The gas charged to the user is capped at a price of 499 gwei
                 elif gas_price_in_gwei > 499:
                     g = 1000000*499*1e-9
@@ -204,14 +208,13 @@ class CDP():
                 # print("collateral change: ", deltaCollateral)
                 # print("gas_cost/collateral_change: ", g/deltaCollateral)
                 deltaDebt = gamma*p*deltaCollateral - p*g
-                # if self.collateral - deltaCollateral <= 0  or self.debt - deltaDebt <= 0 :
-                #     return "Ruined"
+                if self.debt < self.min_automation_debt :
+                    self.isAutomated = False
                 # Update position
                 self.collateral -= deltaCollateral
                 self.debt -= deltaDebt
                 assert self.collateral > 0
                 assert self.debt > 0
-                # NOTE: Add a disable automation condition if the debt falls below 10K
                 # Return True if repay took place
                 return True
             else: 
