@@ -71,11 +71,11 @@ class CDP():
         price: float
             The current price of the collateral denominated in the debt asset.
         '''
-
-        # The amount of collateral to sell to pay back the debt
-        collateralToSell = self.debt/price
-        self.collateral -= collateralToSell
-        self.debt = 0
+        if self.debt > 0:
+            # The amount of collateral to sell to pay back the debt
+            collateralToSell = self.debt/price
+            self.collateral -= collateralToSell
+            self.debt = 0
         return self.collateral
 
     def automate(self, repay_from: float, repay_to: float, boost_from: float, boost_to: float):
