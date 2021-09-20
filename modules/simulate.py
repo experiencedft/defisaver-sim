@@ -219,7 +219,7 @@ def simulateLeveragedGBM(init_portfolio_value, init_collateralization, min_ratio
         data['max_losses_in_debt_asset'] = max_losses_in_debt_asset
         now = datetime.now()
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-        filename = 'single_lev_sim' + dt_string + '.dat'
+        filename = 'gmb_sim' + dt_string + '.dat'
         Path('sim_results').mkdir(parents=True, exist_ok=True)
         with open('sim_results/'+filename, 'w+') as f:
             json.dump(data, f)
