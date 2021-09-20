@@ -12,49 +12,13 @@ import matplotlib.pyplot as plt
 
 from modules import cdp
 from modules import pricegeneration as pr
+from modules.simulate import simulateLeveragedGBM
 
-init_portfolio, init_collateralization, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon, time_step_size = readConfig("Brownian simulation parameters")
+init_portfolio, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon, time_step_size = readConfig("Brownian simulation parameters")
 
 # Terminal returns denominated in collateral asset and debt asset 
 # for each price path, expressed in multiplier
-returns_col = []
-returns_debt = []
-
-# The maximum loss in debt asset recorded for each price path, in %
-max_loss_debt = []
-
-for i in range(N_paths): 
-    vault = cdp.CDP(0, 0, 0)
-    vault.changeCollateral(init_portfolio)
-    vault.boostTo(init_collateralization, init_price, gas_price, service_fee)
-    vault.automate(repay_from, repay_to, boost_from, boost_to)
-    #Portfolio value in collateral asset and debt asset respectively
-    V_col = [init_portfolio]
-    V_debt = [init_portfolio*init_price]
-    t, path = pr.generateGBM(1, drift, volatility, init_price, time_step_size)
-    for price in path:
-        if vault.getCollateralizationRatio(price) > vault.automation_settings["boost from"]:
-            _ = vault.boostTo(vault.automation_settings["boost to"], price, gas_price, service_fee)
-            if _ == "Ruined": 
-                V_col.append(vault.close(price))
-                V_debt.append(path[-1]*vault.close(price))
-                break
-        elif vault.getCollateralizationRatio(price) < vault.automation_settings["repay from"]:
-            _ = vault.repayTo(vault.automation_settings["repay to"], price, gas_price, service_fee)
-            if _ == "Ruined":
-                V_col.append(vault.close(price))
-                V_debt.append(path[-1]*vault.close(price))
-                break
-        V_col.append(vault.collateral - vault.debt/price)
-        V_debt.append(price*(vault.collateral - vault.debt/price))
-    # In %
-    # returns_col.append(100*(V_col[-1]/V_col[0] - 1))
-    # returns_debt.append(100*(V_debt[-1]/V_debt[0] - 1))
-    # In multiplier
-    max_loss_debt.append(100*(1- min(V_debt)/max(V_debt)))
-    returns_col.append(V_col[-1]/V_col[0])
-    returns_debt.append(V_debt[-1]/V_debt[0])
-    # print(returns_debt)
+returns_col, returns_debt, max_loss_col, max_loss_debt = simulateLeveragedGBM(init_portfolio, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon, time_step_size)
 
 print("Minimum overall return: ", round(min(returns_debt), 2),"X")
 print("Maximum overall return: ", round(max(returns_debt), 2), "X")

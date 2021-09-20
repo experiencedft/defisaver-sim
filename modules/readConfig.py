@@ -37,7 +37,8 @@ def readConfig(section: str):
         # Initial collateralization ratio
         init_collateralization = float(config_object.get("Brownian simulation parameters", "INITIAL_COLLATERALIZATION"))
 
-        # Automation settings
+        # Vault and automation settings
+        min_ratio = float(config_object.get("Brownian simulation parameters", "MIN_RATIO"))
         repay_from = float(config_object.get("Brownian simulation parameters", "REPAY_FROM"))
         repay_to = float(config_object.get("Brownian simulation parameters", "REPAY_TO"))
         boost_from = float(config_object.get("Brownian simulation parameters", "BOOST_FROM"))
@@ -58,7 +59,7 @@ def readConfig(section: str):
         time_horizon = float(config_object.get("Brownian simulation parameters", "TIME_HORIZON"))
         time_step_size = float(config_object.get("Brownian simulation parameters", "TIME_STEP_SIZE")) 
         
-        return init_portfolio, init_collateralization, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon, time_step_size
+        return init_portfolio, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon, time_step_size
 
     elif section == "Continuous limit optimization parameters":
         
