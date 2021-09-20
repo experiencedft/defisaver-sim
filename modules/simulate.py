@@ -2,11 +2,15 @@
 Simulation toolbox for automated, fully leveraged vaults.
 '''
 
+import json
+from datetime import datetime
+from pathlib import Path
+
 from typing import Tuple
 from modules.cdp import CDP
 from modules.pricegeneration import generateGBM, generateBoundedGBM
 
-def simulateLeveragedSingle(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, price_path):
+def simulateLeveragedSingle(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, price_path, save_results = False):
     '''
     Simulate a leveraged automated vault with a single price path. This function has no
     concept of time, it just loops through the provided price array and triggers boost or 
@@ -77,10 +81,23 @@ def simulateLeveragedSingle(init_portfolio_value, init_collateralization, min_ra
             collateralizations.append(vault.getCollateralizationRatio(price))
         else: 
             collateralizations.append(0)
+
+    if save_results == True: 
+        data = {}
+        data['values_in_collateral'] = values_in_collateral
+        data['values_in_debt'] = values_in_debt
+        data['collateralizations'] = collateralizations
+        now = datetime.now()
+        dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+        filename = 'single_lev_sim' + dt_string + '.dat'
+        Path('sim_results').mkdir(parents=True, exist_ok=True)
+        with open('sim_results/'+filename, 'w+') as f:
+            json.dump(data, f)
+
     return values_in_collateral, values_in_debt, collateralizations
 
 
-def simulateLeveragedBoundedGBM(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, start_price, end_price, time_horizon = 1, time_step_size = 0.000456621):
+def simulateLeveragedBoundedGBM(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, start_price, end_price, time_horizon = 1, time_step_size = 0.000456621, save_results = False):
     '''
     Simulate a sample of price paths for an automated leveraged vault when the user has 
     a particular expectation of the price appreciation (or depreciation) of the collateral 
@@ -130,7 +147,7 @@ def simulateLeveragedBoundedGBM(init_portfolio_value, init_collateralization, mi
     '''
 
 
-def simulateLeveragedGBM(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon = 1, time_step_size = 0.000456621) -> Tuple[list, list, list]: 
+def simulateLeveragedGBM(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon = 1, time_step_size = 0.000456621, save_results = False) -> Tuple[list, list, list]: 
     '''
     Simulate a sample of price paths for an automated leveraged vault when the user 
     has a particular expectation of the annual growth rate of the average annual growth 
@@ -192,4 +209,18 @@ def simulateLeveragedGBM(init_portfolio_value, init_collateralization, min_ratio
         returns_in_collateral_asset.append(values_in_collateral[-1]/values_in_collateral[0])
         returns_in_debt_asset.append(values_in_debt[-1]/values_in_debt[0])
         max_loss_in_debt_asset.append(100*(1- min(values_in_debt)/max(values_in_debt)))
+
+    if save_results == True: 
+        data = {}
+        data['returns_in_collateral_asset'] = returns_in_collateral_asset
+        data['returns_in_debt_asset'] = returns_in_debt_asset
+        data['max_loss_in_collateral_asset'] = max_loss_in_collateral_asset
+        data['max_loss_in_debt_asset'] = max_loss_in_debt_asset
+        now = datetime.now()
+        dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+        filename = 'single_lev_sim' + dt_string + '.dat'
+        Path('sim_results').mkdir(parents=True, exist_ok=True)
+        with open('sim_results/'+filename, 'w+') as f:
+            json.dump(data, f)
+
     return returns_in_collateral_asset, returns_in_debt_asset, max_loss_in_collateral_asset, max_loss_in_debt_asset

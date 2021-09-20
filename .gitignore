@@ -7,3 +7,7 @@ __pycache__/
 
 #Local testing
 test.py
+
+#Sim results
+
+sim_results/
