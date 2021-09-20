@@ -89,7 +89,7 @@ class CDP():
             boost from, boost to
         '''
         assert repay_from > self.min_ratio + 10
-        self.automated = True
+        self.isAutomated = True
         self.automation_settings["repay from"] = repay_from
         self.automation_settings["repay to"] = repay_to
         self.automation_settings["boost from"] = boost_from
@@ -177,6 +177,8 @@ class CDP():
         elif collateralization < target/100:
             # Fixed estimate of 1M gas consumed by the repay operation to calculate the gas fee in 
             # ETH
+            if gas_price_in_gwei > 499:
+                gas_price_in_gwei = 499
             g = 1000000*gas_price_in_gwei*1e-9
             # Target collateralization ratio
             t = target/100
@@ -196,13 +198,9 @@ class CDP():
             else: 
                 isEmergencyRepay = False
             if p*g < (t*d - p*c)/(5*(gamma*t - 1) - t) or isEmergencyRepay:
-                if isEmergencyRepay:
                 # In case of an emergency repay, this might exceed the previous 20%. In this case, cap the charged amount to 20%.
-                    if p*g > (t*d - p*c)/(5*(gamma*t - 1) - t):
+                if p*g > (t*d - p*c)/(5*(gamma*t - 1) - t):
                         g = (1/p)*(t*d - p*c)/(5*(gamma*t - 1) - t)
-                #The gas charged to the user is capped at a price of 499 gwei
-                elif gas_price_in_gwei > 499:
-                    g = 1000000*499*1e-9
                 # Calculate collateral decrease (> 0) required to arrive to the target collateralization ratio
                 deltaCollateral = (t*d + t*p*g - p*c)/(p*(gamma*t-1))
                 # print("collateral change: ", deltaCollateral)
