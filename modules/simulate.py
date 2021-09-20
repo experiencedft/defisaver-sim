@@ -200,22 +200,23 @@ def simulateLeveragedGBM(init_portfolio_value, init_collateralization, min_ratio
     returns_in_collateral_asset = []
     returns_in_debt_asset = []
     # Max loss is in %
-    max_loss_in_collateral_asset = []
-    max_loss_in_debt_asset = []
+    max_losses_in_collateral_asset = []
+    max_losses_in_debt_asset = []
     # Simulate the N_paths paths and record their overall returns
     for _ in range(N_paths):
         _, path = generateGBM(time_horizon, drift, volatility, init_price, time_step_size)
         values_in_collateral, values_in_debt, _ =  simulateLeveragedSingle(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, path)
         returns_in_collateral_asset.append(values_in_collateral[-1]/values_in_collateral[0])
         returns_in_debt_asset.append(values_in_debt[-1]/values_in_debt[0])
-        max_loss_in_debt_asset.append(100*(1- min(values_in_debt)/max(values_in_debt)))
+        max_losses_in_collateral_asset.append(100*(1- min(values_in_collateral)/max(values_in_collateral)))
+        max_losses_in_debt_asset.append(100*(1- min(values_in_debt)/max(values_in_debt)))
 
     if save_results == True: 
         data = {}
         data['returns_in_collateral_asset'] = returns_in_collateral_asset
         data['returns_in_debt_asset'] = returns_in_debt_asset
-        data['max_loss_in_collateral_asset'] = max_loss_in_collateral_asset
-        data['max_loss_in_debt_asset'] = max_loss_in_debt_asset
+        data['max_losses_in_collateral_asset'] = max_losses_in_collateral_asset
+        data['max_losses_in_debt_asset'] = max_losses_in_debt_asset
         now = datetime.now()
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
         filename = 'single_lev_sim' + dt_string + '.dat'
@@ -223,4 +224,4 @@ def simulateLeveragedGBM(init_portfolio_value, init_collateralization, min_ratio
         with open('sim_results/'+filename, 'w+') as f:
             json.dump(data, f)
 
-    return returns_in_collateral_asset, returns_in_debt_asset, max_loss_in_collateral_asset, max_loss_in_debt_asset
+    return returns_in_collateral_asset, returns_in_debt_asset, max_losses_in_collateral_asset, max_losses_in_debt_asset
