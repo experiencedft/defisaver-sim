@@ -1,10 +1,10 @@
 
 from modules.readConfig import readConfig
-from modules import optimize_continuous_limit as oc
+from modules.optimize import optimizeFactorContinuous
 
 underlying_return, time_period, volatility = readConfig("Continuous limit optimization parameters")
 
-optimal_ratio, optimal_return = oc.optimizeFactorContinuous(underlying_return, time_period, volatility)
+optimal_ratio, optimal_return = optimizeFactorContinuous(underlying_return, time_period, volatility)
 
 print("Optimal leverage ratio = ", optimal_ratio)
 print("Optimal return = ", optimal_return)   
