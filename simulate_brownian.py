@@ -1,6 +1,7 @@
 '''
 Run several simulations of an automated leveraged vault under a geometric brownian 
-motion with prescribed volatility and drift and average the returns.
+motion with prescribed volatility and drift and plot the resultsing statistical
+quantities.
 '''
 
 from modules.readConfig import readConfig
@@ -14,7 +15,7 @@ from modules import cdp
 from modules import pricegeneration as pr
 from modules.simulate import simulateLeveragedGBM
 
-init_portfolio, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon, time_step_size = readConfig("Brownian simulation parameters")
+init_portfolio, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon, time_step_size, _ = readConfig("Brownian simulation parameters")
 
 # Terminal returns denominated in collateral asset and debt asset 
 # for each price path, expressed in multiplier
@@ -54,7 +55,7 @@ plt.title("Distribution of log-returns for a TCL strategy \n" +
 r"$R_f = {rf}, \ R_t = {rt}$".format(rf = repay_from, rt = repay_to) + " | "
 r"$B_f = {bf}, \ B_t = {bt}$".format(bf = boost_from, bt = boost_to) + 
 "\n" + "Market conditions (GBM): " + 
-r"$\sigma_{{vol}} = {sigma},  \ \mu_{{drift}} = {mu}, \ dt = 4 \ \mathrm{{hour}}$".format(sigma = volatility, mu = drift))
+r"$\sigma_{{vol}} = {sigma},  \ \mu_{{drift}} = {mu}, \ dt = {n_hours} \ \mathrm{{hour}}$".format(sigma = volatility, mu = drift, n_hours = round(24*time_step_size*365, 1)))
 plt.annotate('*Threshold-based Constant Leverage', (0.5, -0.08), (0, 0), xycoords='axes fraction', textcoords='offset points', va='top')
 plt.xlim(xmin, xmax)
 # plt.xlabel("Log-returns")

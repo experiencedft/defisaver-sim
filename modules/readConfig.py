@@ -58,8 +58,9 @@ def readConfig(section: str):
         # Time step size (in years)
         time_horizon = float(config_object.get("Brownian simulation parameters", "TIME_HORIZON"))
         time_step_size = float(config_object.get("Brownian simulation parameters", "TIME_STEP_SIZE")) 
+        end_price = float(config_object.get("Brownian simulation parameters", "END_PRICE"))
         
-        return init_portfolio, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon, time_step_size
+        return init_portfolio, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon, time_step_size, end_price
 
     elif section == "Continuous limit optimization parameters":
         
