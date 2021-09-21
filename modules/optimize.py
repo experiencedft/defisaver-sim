@@ -1,5 +1,5 @@
 '''
-Obtain the optimal constant leverage factor in the continuous limit assuming a given time period, volatility, 
+Obtain the optimal constant leverage ratio in the continuous limit assuming a given time period, volatility, 
 and underlying return. 
 '''
 
@@ -26,9 +26,9 @@ def computeConstantLeverageReturn(leverage_ratio, underlying_return, time_period
     vol = volatility
     return (underlying_return**l)*np.exp(((l-l**2)/2)*(vol**2)*t)
 
-def optimizeFactorContinuous(underlying_return, time_period, volatility):
+def optimizeRatioContinuous(underlying_return, time_period, volatility):
     '''
-    Given some basic market conditions, compute the leverage factor that maximizes the return 
+    Given some basic market conditions, compute the leverage ratio that maximizes the return 
     denominated in the debt asset.
 
     If the solution is below 1, return 1 as it means leveraging can only decrease returns.
@@ -45,7 +45,7 @@ def optimizeFactorContinuous(underlying_return, time_period, volatility):
     returns: 
         
     sol: 
-        the optimal leverage factor
+        the optimal leverage ratio
     return: 
         the corresponding return
     '''
