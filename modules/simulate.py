@@ -10,7 +10,7 @@ from typing import Tuple
 from modules.cdp import CDP
 from modules.pricegeneration import generateGBM, generateBoundedGBM
 
-# NOTE: The max losses are not well defined, what we actually need to do is extract the peaks of the values 
+# TODO: The max losses are not well defined, what we actually need to do is extract the peaks of the values 
 # arrays, and return the max fall in % from peak to peak
 
 def simulateLeveragedSingle(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, price_path, save_results = False):
@@ -37,7 +37,7 @@ def simulateLeveragedSingle(init_portfolio_value, init_collateralization, min_ra
     service_fee: float
         fee charged from the automated rebalancing protocol in % of the rebalanced amount.
     gas_price: float
-        average gas price throughout the simulation. NOTE: improve to include gas price array later on
+        average gas price throughout the simulation. TODO: improve to include gas price array later on
     price_path: list
         the price path to simulate, no notion of time is needed
 
@@ -123,7 +123,7 @@ def simulateLeveragedBoundedGBM(init_portfolio_value, init_collateralization, mi
     service_fee: float
         fee charged from the automated rebalancing protocol in % of the rebalanced amount.
     gas_price: float
-        average gas price throughout the simulation. NOTE: improve to include gas price array later on
+        average gas price throughout the simulation. TODO: improve to include gas price array later on
     N_paths: int
         the number of random paths to average over
     volatility: float
@@ -203,7 +203,7 @@ def simulateLeveragedGBM(init_portfolio_value, init_collateralization, min_ratio
     service_fee: float
         fee charged from the automated rebalancing protocol in % of the rebalanced amount.
     gas_price: float
-        average gas price throughout the simulation. NOTE: improve to include gas price array later on
+        average gas price throughout the simulation. TODO: improve to include gas price array later on
     N_paths: int
         the number of random paths to average over
     volatility: float

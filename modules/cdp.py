@@ -40,7 +40,7 @@ class CDP():
         self.isAutomated = False
         self.automation_settings = {"repay from": 0, "repay to": 0, "boost from": 0, "boost to": 0}
         self.min_ratio = min_ratio
-        # NOTE: pass this as an argument later on and include change in simulate.py and related function calls
+        # TODO: pass this as an argument later on and include change in simulate.py and related function calls
         self.min_automation_debt = 0
 
     def getCollateralizationRatio(self, price: float):
