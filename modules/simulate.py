@@ -10,6 +10,9 @@ from typing import Tuple
 from modules.cdp import CDP
 from modules.pricegeneration import generateGBM, generateBoundedGBM
 
+# NOTE: The max losses are not well defined, what we actually need to do is extract the peaks of the values 
+# arrays, and return the max fall in % from peak to peak
+
 def simulateLeveragedSingle(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, price_path, save_results = False):
     '''
     Simulate a leveraged automated vault with a single price path. This function has no
@@ -145,6 +148,36 @@ def simulateLeveragedBoundedGBM(init_portfolio_value, init_collateralization, mi
     max_loss_debt: list
         the maximum loss in % denominated in the debt asset for each price path
     '''
+    # Arrays to record the overall returns and max loss denominated in debt for each path
+    # Returns are a multiple of the initial value
+    returns_in_collateral_asset = []
+    returns_in_debt_asset = []
+    # Max loss is in %
+    max_losses_in_collateral_asset = []
+    max_losses_in_debt_asset = []
+    # Simulate the N_paths paths and record their overall returns
+    for _ in range(N_paths):
+        _, path = generateBoundedGBM(time_horizon, volatility, start_price, end_price, time_step_size)
+        values_in_collateral, values_in_debt, _ =  simulateLeveragedSingle(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, path)
+        returns_in_collateral_asset.append(values_in_collateral[-1]/values_in_collateral[0])
+        returns_in_debt_asset.append(values_in_debt[-1]/values_in_debt[0])
+        max_losses_in_collateral_asset.append(100*(1- min(values_in_collateral)/max(values_in_collateral)))
+        max_losses_in_debt_asset.append(100*(1- min(values_in_debt)/max(values_in_debt)))
+
+    if save_results == True: 
+        data = {}
+        data['returns_in_collateral_asset'] = returns_in_collateral_asset
+        data['returns_in_debt_asset'] = returns_in_debt_asset
+        data['max_losses_in_collateral_asset'] = max_losses_in_collateral_asset
+        data['max_losses_in_debt_asset'] = max_losses_in_debt_asset
+        now = datetime.now()
+        dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+        filename = 'bounded_gbm_sim' + dt_string + '.dat'
+        Path('sim_results').mkdir(parents=True, exist_ok=True)
+        with open('sim_results/'+filename, 'w+') as f:
+            json.dump(data, f)
+
+    return returns_in_collateral_asset, returns_in_debt_asset, max_losses_in_collateral_asset, max_losses_in_debt_asset
 
 
 def simulateLeveragedGBM(init_portfolio_value, init_collateralization, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, N_paths, volatility, drift, init_price, time_horizon = 1, time_step_size = 0.000456621, save_results = False) -> Tuple[list, list, list]: 
