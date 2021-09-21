@@ -27,7 +27,31 @@ def computeConstantLeverageReturn(leverage_ratio, underlying_return, time_period
     return (underlying_return**l)*np.exp(((l-l**2)/2)*(vol**2)*t)
 
 def optimizeFactorContinuous(underlying_return, time_period, volatility):
+    '''
+    Given some basic market conditions, compute the leverage factor that maximizes the return 
+    denominated in the debt asset.
+
+    If the solution is below 1, return 1 as it means leveraging can only decrease returns.
+
+    params:
+
+    underlying_return: 
+        return of the underlying asset as a multiple of initial price
+    time_period: 
+        time period in years
+    volatility: 
+        average annualized volatility over the time period
+
+    returns: 
+        
+    sol: 
+        the optimal leverage factor
+    return: 
+        the corresponding return
+    '''
     def computeReturn(leverage_ratio):
         return -computeConstantLeverageReturn(leverage_ratio, underlying_return, time_period, volatility)
     sol = minimize_scalar(computeReturn)
+    if sol.x < 1:
+        return 1, computeConstantLeverageReturn(1, underlying_return, time_period, volatility)
     return sol.x, abs(sol.fun)
