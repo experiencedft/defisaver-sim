@@ -41,7 +41,7 @@ class CDP():
         self.automation_settings = {"repay from": 0, "repay to": 0, "boost from": 0, "boost to": 0}
         self.min_ratio = min_ratio
         # NOTE: pass this as an argument later on and include change in simulate.py and related function calls
-        self.min_automation_debt = 10000
+        self.min_automation_debt = 0
 
     def getCollateralizationRatio(self, price: float):
         '''
@@ -171,10 +171,9 @@ class CDP():
         '''
         collateralization = self.collateral*price/self.debt
         # Check that it's possible to repay with the desired target
-        if self.debt == 0:
-            assert False
+        assert self.debt != 0
         # The current CRatio must be below the target OR below min_ratio + 10%
-        elif collateralization < target/100:
+        if collateralization < target/100:
             # Fixed estimate of 1M gas consumed by the repay operation to calculate the gas fee in 
             # ETH
             if gas_price_in_gwei > 499:
