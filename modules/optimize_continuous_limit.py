@@ -24,7 +24,7 @@ def computeConstantLeverageReturn(leverage_ratio, underlying_return, time_period
     l = leverage_ratio
     t = time_period
     vol = volatility
-    return (underlying_return**l)*np.exp(((l-l**2)/2)*vol*t)
+    return (underlying_return**l)*np.exp(((l-l**2)/2)*(vol**2)*t)
 
 def optimizeFactorContinuous(underlying_return, time_period, volatility):
     def computeReturn(leverage_ratio):
