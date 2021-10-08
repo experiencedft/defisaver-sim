@@ -16,7 +16,7 @@ Python 3.
 
 ## Project structure
 
-``modules/cdp.py`` contains the logic of CDPs as a ``CDP()`` class. Collateral and debt can be added or removed, automation is turned off by default but can be enabled by providing some automation settings. Boost and Repay functions can be called even without automation turned on. A derivation of the formulas used for these functions will be provided in a separate document. Note: currently the implementation doesn't take into account some of the conditions used by the DeFi Saver team. In particular, there is no emergency repay if close to some liquidation threshold, and there is no conditin on the max fees charged. This is left for a later update. NOTE: because of this, it might be that if a position is too small initially, the gas fee charged when boosting or repaying would make the operation impossible. In this case, the functions will throw an error.
+``modules/cdp.py`` contains the logic of CDPs as a ``CDP()`` class. Collateral and debt can be added or removed, automation is turned off by default but can be enabled by providing some automation settings. Boost and Repay functions can be called even without automation turned on. A derivation of the formulas used for these functions will be provided in a separate document. 
 
 ``modules/pricegeneration.py`` contains a collection of functions used to generate diverse price actions:
 
@@ -26,11 +26,11 @@ Python 3.
 - Geometric Brownian Motion (GBM).
 - Geometric Brownian Motion with prescribed start and end points.
 
-``modules/simulate.py`` contains all the functions used to run actual simulations of automated vaults, including simulations of a collection of sample paths.
+``modules/simulate.py`` contains all the functions used to run actual simulations of automated vaults, including simulations of a collection of sample paths. At the moment, if a position can't be rebalanced anymore because of some fee condition, it is closed to the collateral asset, which is then held until the end of the simulation.
 
 ``modules/optimize.py`` contains functions used to find optimal parameters for constant leverage or leveraged automated vault strategies.
 
-``simulate_brownian.py`` is an example script using the above modules to generate a distribution of returns under GBM for some given automation settings. It is associated with a ``config.ini`` file where simulations parameters need to be set. NOTE: if the position if too small initially as discussed above, the simulation script considers the position "ruined" if it's not possible to update it with the current gas price. It is then simply closed and the amount of collateral obtained after closing is used to calculate returns.
+The top level folder contains a collection of scripts that may be used in tandem with parameters specified in the `config.ini` file.
 
 ## How to use for simple simulations?
 
