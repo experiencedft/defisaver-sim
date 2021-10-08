@@ -113,12 +113,13 @@ def optimizeAutomationBoundedGBM(initial_portfolio_value, min_ratio, service_fee
     # Look for the optimal leverage ratio in the continuous case to have a good initial guess.
     L, _ = optimizeRatioContinuous(end_price/start_price, time_horizon, volatility)
     R_init = 100*L/(L-1)
-    print("Optimal L in continuous case: ", L)
-    print("Corresponding ratio: ", R_init)
+    # print("Optimal L in continuous case: ", L)
+    # print("Corresponding ratio: ", R_init)
     if R_init < min_ratio + 10:
         initial_guess = [200, 220, 240, 220]
     else: 
         initial_guess = [R_init - 5, R_init, R_init + 5, R_init]
+    print("Optimizing...")
     # Actual optimization routine
     res = minimize(meanReturnBoundedGBM, initial_guess, constraints = cons, method='COBYLA', options={'catol': 0}, tol=0.1)
     sol = res.x
