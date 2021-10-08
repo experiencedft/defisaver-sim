@@ -102,11 +102,11 @@ def optimizeAutomationBoundedGBM(initial_portfolio_value, min_ratio, service_fee
         repay_to = automation_settings[1]
         boost_from = automation_settings[2]
         boost_to = automation_settings[3]
-        print("Trying values: ")
-        print("Repay from: ", repay_from)
-        print("Repay to: ", repay_to)
-        print("Boost from: ", boost_from)
-        print("Boost to: ", boost_to, "\n")
+        # print("Trying values: ")
+        # print("Repay from: ", repay_from)
+        # print("Repay to: ", repay_to)
+        # print("Boost from: ", boost_from)
+        # print("Boost to: ", boost_to, "\n")
         return_in_collateral_asset, _, _, _ = simulateLeveragedBoundedGBM(initial_portfolio_value, boost_to, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, 200, volatility, start_price, end_price, time_horizon, 0.000114155)
         return -np.mean(return_in_collateral_asset)
 
@@ -126,8 +126,9 @@ def optimizeAutomationBoundedGBM(initial_portfolio_value, min_ratio, service_fee
     repay_to = sol[1]
     boost_from = sol[2]
     boost_to = sol[3]
-    returns, _, _, _ = simulateLeveragedBoundedGBM(initial_portfolio_value, boost_to, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, 100, volatility, start_price, end_price, time_horizon, 0.000114155)
-    optimal_expected_return_in_collateral = np.mean(returns)
+    returns_col, returns_debt, _, _ = simulateLeveragedBoundedGBM(initial_portfolio_value, boost_to, min_ratio, repay_from, repay_to, boost_from, boost_to, service_fee, gas_price, 100, volatility, start_price, end_price, time_horizon, 0.000114155)
+    optimal_expected_return_in_collateral = np.mean(returns_col)
+    optimal_expected_return_in_debt = np.mean(returns_debt)
     if optimal_expected_return_in_collateral < 1:
         return [0, 0, 0, 0], 1
-    return sol, optimal_expected_return_in_collateral
+    return sol, optimal_expected_return_in_collateral, optimal_expected_return_in_debt

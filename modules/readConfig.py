@@ -71,3 +71,16 @@ def readConfig(section: str):
         volatility = float(config_object.get("Continuous limit optimization parameters", "VOLATILITY"))
 
         return underlying_return, time_period, volatility
+
+    elif section == "Automated vault optimization":
+
+        init_portfolio = float(config_object.get("Automated vault optimization", "INITIAL_PORTFOLIO"))
+        min_ratio = float(config_object.get("Automated vault optimization", "MIN_RATIO"))
+        service_fee = float(config_object.get("Automated vault optimization", "SERVICE_FEE"))
+        gas_price = float(config_object.get("Automated vault optimization", "GAS_PRICE"))
+        volatility = float(config_object.get("Automated vault optimization", "VOLATILITY"))
+        start_price = float(config_object.get("Automated vault optimization", "START_PRICE"))
+        end_price = float(config_object.get("Automated vault optimization", "END_PRICE"))
+        time_horizon = float(config_object.get("Automated vault optimization", "TIME_HORIZON"))
+
+        return init_portfolio, min_ratio, service_fee, gas_price, volatility, start_price, end_price, time_horizon
