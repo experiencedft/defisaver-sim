@@ -48,4 +48,4 @@ Once you have filled the section corresponding to what you are trying to simulat
 
 - For finding the optimal leverage ratio in the theoretical case of perfectly continuous constant leverage, run ``python continuous_optimization_script.py``.
 
-- For finding the optimal automation parameters of a leveraged vault on DeFi Saver, run ``python automated_vault_optimization_script.py``.
+- For finding the optimal automation parameters of a leveraged vault on DeFi Saver, run ``python automated_vault_optimization_script.py``. WARNING: this can take a while to run.
